@@ -2,19 +2,24 @@
 *.o
 *.a
 *.so
+
 # Folders
 _obj
 _test
+
 # Architecture specific extensions/prefixes
 *.[568vq]
 [568vq].out
+
+>>>>>>> 6cf3a6a0774afe12efdc0e25ad0045ee3972f2c5
 *.cgo1.go
 *.cgo2.c
 _cgo_defun.c
 _cgo_gotypes.go
 _cgo_export.*
+goeventstore
 _testmain.go
+
 *.exe
 *.test
 *.prof
-goeventstore
