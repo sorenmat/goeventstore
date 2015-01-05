@@ -1,0 +1,7 @@
+package main;
+
+message ProtoEvent {
+	required string Id = 1;
+	required string EventType = 2;
+	required bytes EventData = 3;
+}

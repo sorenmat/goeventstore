@@ -1,8 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"encoding/xml"
 	"time"
+
+	"code.google.com/p/go-uuid/uuid"
 )
 
 type AuthorType struct {
@@ -21,16 +23,25 @@ type EntryType struct {
 }
 
 type AtomFeed struct {
-	XMLName struct{}   `xml:"atomfeed"`
-	Title   string     `xml:"title"`
-	Id      string     `xml:"id"`
-	Updated time.Time  `xml:"updated"`
-	Author  AuthorType `xml:"author"`
-	Link    string     `xml:"link"`
-	Entry   EntryType  `xml:"entry"`
+	XMLName struct{}    `xml:"feed"`
+	Xmlns   string      `xml:"xmlns,attr"`
+	Title   string      `xml:"title"`
+	Id      string      `xml:"id"`
+	Updated time.Time   `xml:"updated"`
+	Author  AuthorType  `xml:"author"`
+	Link    []Link      `xml:"link"`
+	Entries []EntryType `xml:"entry"`
 }
 
-func main() {
-	author := AuthorType{Name: "Test Teseter"}
-	fmt.Println(author)
+// Link is the representation of a http link in the atom feed
+type Link struct {
+	XMLName xml.Name `xml:"link"`
+	Href    string   `xml:"href,attr"`
+	Rel     string   `xml:"rel,attr,omitempty"`
+}
+
+type Event struct {
+	Id        uuid.UUID
+	EventType string
+	EventData []byte
 }
