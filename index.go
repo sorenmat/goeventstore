@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math"
+	"os"
 )
 
 // IndexEntry in the index
@@ -45,17 +46,15 @@ func bytesToIndex(b []byte) IndexEntry {
 	return newEntry
 }
 
-func writeIndexEntry(index IndexEntry) {
+func writeIndexEntry(index IndexEntry, indexFile *os.File) {
 	//var indexFile       *os.File
-	indexFile := openFile("data/newindex.dat")
+	//	indexFile := openFile("data/newindex.dat")
 	indexFile.Write(indexToBytes(index))
-	indexFile.Close()
+	//	indexFile.Close()
 }
 
 func readIndexFromDisk() []IndexEntry {
 	indexFile := openFile("data/newindex.dat")
-	//	data := make([]byte, 200000) //[]byte{}
-	//	bytesRead, _ := indexFile.Read(data)
 	data, err := ioutil.ReadFile("data/newindex.dat")
 	if err != nil {
 		log.Fatal(err)

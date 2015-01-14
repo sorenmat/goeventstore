@@ -38,7 +38,10 @@ func TestWriteReadIndex(t *testing.T) {
 
 func BenchmarkWriteIndexEntries(b *testing.B) {
 	entry := IndexEntry{EventNumber: 1, Position: 0, Length: 20}
+	indexFile := openFile("data/newindex.dat")
+
 	for i := 0; i < b.N; i++ {
-		writeIndexEntry(entry)
+		writeIndexEntry(entry, indexFile)
 	}
+	indexFile.Close()
 }

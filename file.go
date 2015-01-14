@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/gob"
 	"fmt"
 	"log"
 	"os"
@@ -16,7 +15,6 @@ type EventStream struct {
 	index           []IndexEntry
 	eFile           *os.File
 	indexFile       *os.File
-	indexEncoder    *gob.Encoder
 	currentPosision uint64
 	maxEventNumber  uint64
 }
@@ -37,21 +35,6 @@ func (e *EventStream) Init() {
 
 		e.indexFile = openFile("data/index.dat")
 
-		e.indexEncoder = gob.NewEncoder(e.indexFile)
-		/*		indexDecoder := gob.NewDecoder(e.indexFile)
-				running := true
-				for running {
-					ie := IndexEntry{}
-					decodeerr := indexDecoder.Decode(&ie)
-					if decodeerr == io.EOF {
-						log.Println("Done loading index")
-						running = false
-					} else {
-						e.index = append(e.index, ie)
-						running = true
-					}
-				}
-		*/
 		e.index = readIndexFromDisk()
 		fmt.Printf("%d\n", len(e.index))
 		e.maxEventNumber = uint64(len(e.index))
@@ -87,11 +70,7 @@ func (e *EventStream) WriteEvent(event Event) int64 {
 	// Write event to file
 	length, err := e.eFile.WriteAt(protoBytes, int64(e.currentPosision))
 	e.index = append(e.index, IndexEntry{currentEventNumber, e.currentPosision, uint64(length)})
-
-	encodeerr := e.indexEncoder.Encode(IndexEntry{currentEventNumber, e.currentPosision, uint64(length)})
-	if encodeerr != nil {
-		log.Fatal(err)
-	}
+	writeIndexEntry(IndexEntry{currentEventNumber, e.currentPosision, uint64(length)}, e.indexFile)
 	e.currentPosision = e.currentPosision + uint64(length)
 	if err != nil {
 		log.Fatalln("encode:", err)
