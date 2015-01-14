@@ -10,6 +10,8 @@ It is generated from these files:
 
 It has these top-level messages:
 	ProtoEvent
+	IndexProto
+	IndexEntryProto
 */
 package main
 
@@ -50,6 +52,54 @@ func (m *ProtoEvent) GetEventData() []byte {
 		return m.EventData
 	}
 	return nil
+}
+
+type IndexProto struct {
+	Index            []*IndexEntryProto `protobuf:"bytes,1,rep" json:"Index,omitempty"`
+	XXX_unrecognized []byte             `json:"-"`
+}
+
+func (m *IndexProto) Reset()         { *m = IndexProto{} }
+func (m *IndexProto) String() string { return proto.CompactTextString(m) }
+func (*IndexProto) ProtoMessage()    {}
+
+func (m *IndexProto) GetIndex() []*IndexEntryProto {
+	if m != nil {
+		return m.Index
+	}
+	return nil
+}
+
+type IndexEntryProto struct {
+	EventNumber      *int64 `protobuf:"varint,1,req" json:"EventNumber,omitempty"`
+	Position         *int64 `protobuf:"varint,2,req" json:"Position,omitempty"`
+	Length           *int64 `protobuf:"varint,3,req" json:"Length,omitempty"`
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *IndexEntryProto) Reset()         { *m = IndexEntryProto{} }
+func (m *IndexEntryProto) String() string { return proto.CompactTextString(m) }
+func (*IndexEntryProto) ProtoMessage()    {}
+
+func (m *IndexEntryProto) GetEventNumber() int64 {
+	if m != nil && m.EventNumber != nil {
+		return *m.EventNumber
+	}
+	return 0
+}
+
+func (m *IndexEntryProto) GetPosition() int64 {
+	if m != nil && m.Position != nil {
+		return *m.Position
+	}
+	return 0
+}
+
+func (m *IndexEntryProto) GetLength() int64 {
+	if m != nil && m.Length != nil {
+		return *m.Length
+	}
+	return 0
 }
 
 func init() {

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"math"
 	"testing"
 	"time"
 )
@@ -32,7 +30,7 @@ func TestWrite(t *testing.T) {
 		eventStream.WriteEvent(myEvent)
 	}
 }
-*/
+
 func TestAllEvents(t *testing.T) {
 	eventStream := EventStream{}
 	eventStream.Init()
@@ -68,14 +66,17 @@ func TestWriteAndRead(t *testing.T) {
 		eventStream.ReadEvent(i)
 	}
 }
+*/
 
 func BenchmarkWriteEvents(b *testing.B) {
 	eventStream := EventStream{}
 	eventStream.Init()
-
+	b.StartTimer()
 	eventData := string(time.Now().String())
 	myEvent := Event{EventType: "TestEvent", EventData: []byte(eventData)}
 	for i := 0; i < b.N; i++ {
 		eventStream.WriteEvent(myEvent)
 	}
+	b.StopTimer()
+	eventStream.Close()
 }
