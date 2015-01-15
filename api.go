@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/xml"
 	"time"
-
-	"code.google.com/p/go-uuid/uuid"
 )
 
 type AuthorType struct {
@@ -38,10 +36,4 @@ type Link struct {
 	XMLName xml.Name `xml:"link"`
 	Href    string   `xml:"href,attr"`
 	Rel     string   `xml:"rel,attr,omitempty"`
-}
-
-type Event struct {
-	Id        uuid.UUID
-	EventType string
-	EventData []byte
 }

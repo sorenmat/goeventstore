@@ -58,12 +58,9 @@ func (e *EventStream) Close() {
 
 func (e *EventStream) WriteEvent(event Event) int64 {
 	// proto stuff
-	protoMessage := new(ProtoEvent)
-	protoMessage.EventData = event.EventData
-	protoMessage.Id = proto.String(event.Id.String())
-	protoMessage.EventType = proto.String(event.EventType)
-	protoBytes, _ := proto.Marshal(protoMessage)
-
+	//start := time.Now().UnixNano()
+	protoBytes := eventToBytes(event)
+	//fmt.Println("Serializing event took: ", (time.Now().UnixNano() - start))
 	currentEventNumber := e.maxEventNumber
 	e.maxEventNumber = e.maxEventNumber + 1
 

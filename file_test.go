@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 	"time"
+
+	"code.google.com/p/go-uuid/uuid"
 )
 
 /*
@@ -19,18 +22,21 @@ func TestWriteOneReadOne(t *testing.T) {
 		t.Error("Death..")
 	}
 }
-
+*/
 func TestWrite(t *testing.T) {
+	LOOP_COUNT := 5000
 	eventStream := EventStream{}
 	eventStream.Init()
-	fmt.Println("This is a test")
+	start := time.Now().UnixNano()
 	eventData := "This is just a simple event, with some arbitary data in it...."
-	myEvent := Event{EventType: "TestEvent", EventData: []byte(eventData)}
-	for i := 0; i < 5000; i++ {
+	myEvent := Event{Id: uuid.NewUUID(), EventType: "TestEvent", EventData: []byte(eventData)}
+	for i := 0; i < LOOP_COUNT; i++ {
 		eventStream.WriteEvent(myEvent)
 	}
+	fmt.Printf("%d writes took: %d\n", LOOP_COUNT, (time.Now().UnixNano()-start)/int64(LOOP_COUNT))
 }
 
+/*
 func TestAllEvents(t *testing.T) {
 	eventStream := EventStream{}
 	eventStream.Init()
@@ -71,12 +77,11 @@ func TestWriteAndRead(t *testing.T) {
 func BenchmarkWriteEvents(b *testing.B) {
 	eventStream := EventStream{}
 	eventStream.Init()
-	b.StartTimer()
+	b.ResetTimer()
 	eventData := string(time.Now().String())
-	myEvent := Event{EventType: "TestEvent", EventData: []byte(eventData)}
+	myEvent := Event{Id: uuid.NewUUID(), EventType: "TestEvent", EventData: []byte(eventData)}
 	for i := 0; i < b.N; i++ {
 		eventStream.WriteEvent(myEvent)
 	}
-	b.StopTimer()
 	eventStream.Close()
 }
