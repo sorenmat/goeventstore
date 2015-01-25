@@ -1,9 +1,10 @@
 package main
 
 import (
+	"strconv"
 	"time"
 
-	"github.com/emicklei/go-restful"
+	"github.com/gin-gonic/gin"
 )
 
 // RestServer struct to define the server
@@ -12,7 +13,7 @@ type RestServer struct {
 }
 
 // AllEvents return a atom feed of all the events
-func (u RestServer) AllEvents(request *restful.Request, response *restful.Response) {
+func (u RestServer) AllEvents(c *gin.Context) {
 	url := "http://localhost:8080/event"
 	title := "EventStream"
 	updated := time.Now() // should be latest entry in stream
@@ -25,7 +26,8 @@ func (u RestServer) AllEvents(request *restful.Request, response *restful.Respon
 	entries := eventsToAtom(events)
 	//	fmt.Println(entries)
 	feed := AtomFeed{Xmlns: "http://www.w3.org/2005/Atom", Title: title, Id: url, Updated: updated, Author: author, Link: links, Entries: entries}
-	response.WriteEntity(feed)
+	//response.WriteEntity(feed)
+	c.JSON(200, feed)
 }
 
 func eventsToAtom(events []Event) []EntryType {
@@ -37,49 +39,37 @@ func eventsToAtom(events []Event) []EntryType {
 	return result
 }
 
+// AllEvents return a atom feed of all the events
+func (u RestServer) addEventToStream(c *gin.Context) {
+	var entity = Event{}
+	if c.EnsureBody(&entity) {
+		u.Server.WriteEvent(entity)
+
+	}
+	c.JSON(200, nil)
+}
+
+func (u RestServer) getEvent(c *gin.Context) {
+	ids := c.Params.ByName("id")
+	eventNumber, _ := strconv.Atoi(ids)
+
+	c.JSON(200, u.Server.ReadEvent(eventNumber))
+}
+
+func (u RestServer) status(c *gin.Context) {
+	c.JSON(200, "ok")
+
+}
+
 // Register all rest resources on the server
 func (u RestServer) Register() {
 
-	ws := new(restful.WebService)
-	ws.
-		Path("/").
-		Consumes(restful.MIME_XML, restful.MIME_JSON).
-		Produces(restful.MIME_JSON, restful.MIME_XML) // you can specify this per route as well
+	ws := gin.Default()
+	ws.GET("/event", u.AllEvents)
 
-	ws.Route(ws.GET("/event").To(u.AllEvents).
-		// docs
-		Doc("List all events").
-		Operation("AllEvents").
-		Writes(AtomFeed{})) // on the response
+	ws.GET("/status", u.status)
+	ws.GET("/stream/:stream/:id", u.getEvent)
+	ws.POST("/stream/:streamid", u.addEventToStream)
 
-	/*ws.Route(ws.GET("/").To(u.findAllUsers).
-	// docs
-	Doc("get all users").
-	Operation("findAllUsers").
-	Returns(200, "OK", []User{}))
-
-	ws.Route(ws.GET("/{user-id}").To(u.findUser).
-		// docs
-		Doc("get a user").
-		Operation("findUser").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-		Writes(User{})) // on the response
-	ws.Route(ws.PUT("/{user-id}").To(u.updateUser).
-		// docs
-		Doc("update a user").
-		Operation("updateUser").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-		Reads(User{})) // from the request
-	ws.Route(ws.POST("/{id}").To(u.createProperty).
-		// docs
-		Doc("create a property").
-		Operation("createProperty").
-		Reads(User{})) // from the request
-	ws.Route(ws.DELETE("/{user-id}").To(u.removeUser).
-		// docs
-		Doc("delete a user").
-		Operation("removeUser").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")))
-	*/
-	restful.Add(ws)
+	ws.Run(":8080")
 }

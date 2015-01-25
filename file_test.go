@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"runtime"
+	"sync"
 	"testing"
 	"time"
 
@@ -24,7 +26,7 @@ func TestWriteOneReadOne(t *testing.T) {
 }
 */
 func TestWrite(t *testing.T) {
-	LOOP_COUNT := 5000
+	LOOP_COUNT := 1000000
 	eventStream := EventStream{}
 	eventStream.Init()
 	start := time.Now().UnixNano()
@@ -33,7 +35,32 @@ func TestWrite(t *testing.T) {
 	for i := 0; i < LOOP_COUNT; i++ {
 		eventStream.WriteEvent(myEvent)
 	}
-	fmt.Printf("%d writes took: %d\n", LOOP_COUNT, (time.Now().UnixNano()-start)/int64(LOOP_COUNT))
+	fmt.Printf("%d writes took: %d sec\n", LOOP_COUNT, (time.Now().UnixNano()-start)/1000/1000)
+}
+func TestMultipleWrites(t *testing.T) {
+	eventStream := EventStream{}
+	eventStream.Init()
+	fmt.Println("Starting multiple writes")
+	eventData := "This is just a simple event, with some arbitary data in it...."
+	myEvent := Event{Id: uuid.NewUUID(), EventType: "TestEvent", EventData: []byte(eventData)}
+
+	runtime.GOMAXPROCS(8)
+	var wg sync.WaitGroup
+	go writestuff(1, eventStream, myEvent, &wg)
+	go writestuff(2, eventStream, myEvent, &wg)
+	go writestuff(3, eventStream, myEvent, &wg)
+	go writestuff(4, eventStream, myEvent, &wg)
+	wg.Wait()
+}
+func writestuff(c int, eventStream EventStream, myEvent Event, wg *sync.WaitGroup) {
+	LOOP_COUNT := 10000
+	wg.Add(1)
+	for i := 0; i < LOOP_COUNT; i++ {
+		eventStream.WriteEvent(myEvent)
+		fmt.Printf("%d wrote %d\n", c, i)
+		time.Sleep(2000)
+	}
+	wg.Done()
 }
 
 /*

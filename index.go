@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/binary"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math"
 	"os"
+	"sync"
 )
 
 // IndexEntry in the index
@@ -13,6 +15,22 @@ type IndexEntry struct {
 	EventNumber uint64
 	Position    uint64
 	Length      uint64
+}
+
+type Index struct {
+	index []IndexEntry
+	mu    sync.Mutex
+	file  *os.File
+}
+
+func (index *Index) Init() {
+	index.index = readIndexFromDisk()
+	index.file = openFile("data/index.dat")
+	fmt.Printf("%d\n", len(index.index))
+}
+
+func (index *Index) MaxEventNumber() int {
+	return len(index.index)
 }
 
 func indexToBytes(entry IndexEntry) []byte {
@@ -38,6 +56,20 @@ func indexToBytes(entry IndexEntry) []byte {
 	return res
 }
 
+func (index *Index) Get(number int) IndexEntry {
+	return index.index[number]
+}
+
+func (index *Index) Append(entry IndexEntry) {
+	index.mu.Lock()
+	writeIndexEntry(entry, index.file)
+	index.mu.Unlock()
+	index.index = append(index.index, entry)
+}
+
+func (index *Index) Close() {
+	index.file.Close()
+}
 func bytesToIndex(b []byte) IndexEntry {
 	newEntry := IndexEntry{}
 	newEntry.EventNumber = binary.LittleEndian.Uint64(b[0:8])
@@ -47,15 +79,12 @@ func bytesToIndex(b []byte) IndexEntry {
 }
 
 func writeIndexEntry(index IndexEntry, indexFile *os.File) {
-	//var indexFile       *os.File
-	//	indexFile := openFile("data/newindex.dat")
 	indexFile.Write(indexToBytes(index))
-	//	indexFile.Close()
+
 }
 
 func readIndexFromDisk() []IndexEntry {
-	indexFile := openFile("data/newindex.dat")
-	data, err := ioutil.ReadFile("data/newindex.dat")
+	data, err := ioutil.ReadFile("data/index.dat")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,6 +98,5 @@ func readIndexFromDisk() []IndexEntry {
 		entry := bytesToIndex(slice)
 		result = append(result, entry)
 	}
-	indexFile.Close()
 	return result
 }
