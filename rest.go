@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sorenmat/goeventstore/event"
 )
 
 // RestServer struct to define the server
@@ -30,7 +31,7 @@ func (u RestServer) AllEvents(c *gin.Context) {
 	c.JSON(200, feed)
 }
 
-func eventsToAtom(events []Event) []EntryType {
+func eventsToAtom(events []event.Event) []EntryType {
 	result := []EntryType{}
 	for _, v := range events {
 		e := EntryType{Id: v.Id.String(), Link: "http://localhost:8080/event" + v.Id.String()}
@@ -41,7 +42,7 @@ func eventsToAtom(events []Event) []EntryType {
 
 // AllEvents return a atom feed of all the events
 func (u RestServer) addEventToStream(c *gin.Context) {
-	var entity = Event{}
+	var entity = event.Event{}
 	if c.EnsureBody(&entity) {
 		u.Server.WriteEvent(entity)
 
